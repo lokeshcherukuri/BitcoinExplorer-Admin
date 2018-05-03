@@ -46,25 +46,29 @@ class ScriptPattern:
             return False
         if elements[0] != 'OP_HASH160':
             return False
-        if elements[3] is not None or len(elements[3]) != 2 * LEGACY_ADDRESS_SIZE:
+        if elements[1] is None or len(elements[1]) != 2 * LEGACY_ADDRESS_SIZE:
             return False
-        if elements[4] != 'OP_EQUAL':
+        if elements[2] != 'OP_EQUAL':
             return False
         return True
 
     @staticmethod
     def isPayToWitnessPubKeyHash(elements):
-        if elements is None or len(elements) != 1:
+        if elements is None or len(elements) != 2:
             return False
-        if elements[0] is not None and len(elements[0]) != 2 * PKH_WITNESS_LENGTH:
+        if elements[0] is None or elements[0] != '00':
+            return False
+        if elements[1] is None or len(elements[1]) != 2 * PKH_WITNESS_LENGTH:
             return False
         return True
 
     @staticmethod
     def isPayToWitnessScriptHash(elements):
-        if elements is None or len(elements) != 1:
+        if elements is None or len(elements) != 2:
             return False
-        if elements[0] is not None and len(elements[0]) != 2 * SH_WITNESS_LENGTH:
+        if elements[0] is None or elements[0] != '00':
+            return False
+        if elements[1] is None or len(elements[1]) != 2 * SH_WITNESS_LENGTH:
             return False
         return True
 

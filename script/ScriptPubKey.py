@@ -6,12 +6,11 @@ from .ScriptPattern import ScriptPattern
 
 
 class ScriptPubKey(Script):
-    def __init__(self, script_hex, script_decoded, script_type, req_sigs):
+    def __init__(self, script_hex, script_decoded, script_type=None, req_sigs=None):
         super().__init__(script_hex, script_decoded)
         self.type = script_type
         self.reqSigs = req_sigs
 
-    @staticmethod
     def to_dict(self):
         return dict(
             hex=self.hex,
@@ -25,15 +24,26 @@ class ScriptPubKey(Script):
         script = super().parse(stream)
         script_type = ScriptPattern.findScriptType(script.asm)
         script.type = script_type
-        # TODO find reqSigs basing on pubkeyscript.
-        # if p2pkh, reqSigs is 1
-        # if multisig, use m & n values
-        # temporarily initializing with 1
         script.reqSigs = 1
+        return script
+
+    @staticmethod
+    def numberOfSigsReqToSpend(script, script_type):
+        if script_type == 'pay-to-pubkey-hash':
+            script.reqSigs = 1
+            pass
+        elif script_type == 'pay-to-script-hash':
+            pass
+        else:
+            RuntimeError("Not implemented")
+
+    @staticmethod
+    def getDestinationAddresses(script):
         # find addresses
         # hashes = ScriptPattern.getDestinationHashes(script.asm)
         # for hash in hashes:
-        #     address = Address.
+        #     find address
+        pass
 
 
 class TestScriptPubKey(TestCase):

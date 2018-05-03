@@ -21,7 +21,10 @@ class Script:
             if value == 0:
                 script_decoded += '00 '
             elif 1 <= value <= 75:
-                script_decoded += stream.read(value) + ' '
+                data = hexlify(stream.read(value)).decode('ascii')
+                if (value == 71 or value == 72) and data.endswith('01'):
+                    data = data[:-2] + '[ALL]'
+                script_decoded += data + ' '
             elif 76 <= value <= 78:
                 if value == 76:
                     push_data_size = bytes_to_int(stream.read(1))
@@ -37,7 +40,7 @@ class Script:
             elif 82 <= value <= 96:
                 script_decoded += (value-80) + ' '
             else:
-                script_decoded += OP_CODES[value]
+                script_decoded += OP_CODES[value] + ' '
 
             current_byte = stream.read(1)
 
