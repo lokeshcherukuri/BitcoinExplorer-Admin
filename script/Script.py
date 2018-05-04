@@ -10,6 +10,7 @@ class Script:
 
     @classmethod
     def parse(cls, stream):
+        stack = []
         current_position = stream.tell()
         script_hex = hexlify(stream.read()).decode('ascii')
         stream.seek(current_position)
@@ -19,12 +20,12 @@ class Script:
         while current_byte != b'':
             value = bytes_to_int(current_byte)
             if value == 0:
-                script_decoded += '00 '
+                stack.append('00')
             elif 1 <= value <= 75:
                 data = hexlify(stream.read(value)).decode('ascii')
                 if (value == 71 or value == 72) and data.endswith('01'):
                     data = data[:-2] + '[ALL]'
-                script_decoded += data + ' '
+                stack.append(data)
             elif 76 <= value <= 78:
                 if value == 76:
                     push_data_size = bytes_to_int(stream.read(1))
@@ -32,18 +33,20 @@ class Script:
                     push_data_size = bytes_to_int(stream.read(2))
                 else:
                     push_data_size = bytes_to_int(stream.read(4))
-                script_decoded += hexlify(stream.read(push_data_size)).decode('ascii') + ' '
+                stack.append(hexlify(stream.read(push_data_size)).decode('ascii'))
             elif value == 79:
-                script_decoded += '-1 '
+                stack.append('-1')
             elif value == 81:
-                script_decoded += '1 '
+                stack.append('1')
             elif 82 <= value <= 96:
-                script_decoded += (value-80) + ' '
+                stack.append(value-80)
             else:
-                script_decoded += OP_CODES[value] + ' '
+                stack.append(OP_CODES[value])
 
             current_byte = stream.read(1)
 
+        for element in stack:
+            script_decoded += element + ' '
         script_decoded = script_decoded.strip()
         return cls(script_hex, script_decoded)
 
