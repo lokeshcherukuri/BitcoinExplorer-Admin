@@ -15,12 +15,15 @@ class TransactionInput:
         self.sequence = sequence
 
     def to_dict(self):
-        return dict(
+        dictionary = dict(
             txid=self.txid,
             vout=self.vout,
             scriptSig=self.scriptSig,
             sequence=self.sequence
         )
+        if hasattr(self, 'txinwitness'):
+            dictionary['txinwitness'] = self.txinwitness
+        return dictionary
 
     @classmethod
     def parse(cls, stream):
