@@ -1,8 +1,5 @@
-from binascii import hexlify
 from io import BytesIO
-
-from Utilities import bytes_to_int
-from Utilities import varInt
+from Utilities import bytesToInt, varInt, decodeToAscii
 from script.ScriptSig import ScriptSig
 from unittest import TestCase, main
 
@@ -27,11 +24,11 @@ class TransactionInput:
 
     @classmethod
     def parse(cls, stream):
-        txid = hexlify(stream.read(32)[::-1]).decode('ascii')
-        vout = bytes_to_int(stream.read(4))
+        txid = decodeToAscii(stream.read(32)[::-1])
+        vout = bytesToInt(stream.read(4))
         script_len = varInt(stream)
         script_sig = ScriptSig.parse(BytesIO(stream.read(script_len)))
-        sequence = bytes_to_int(stream.read(4))
+        sequence = bytesToInt(stream.read(4))
 
         return cls(txid, vout, script_sig, sequence)
 

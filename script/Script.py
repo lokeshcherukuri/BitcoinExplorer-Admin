@@ -1,7 +1,5 @@
 from io import BytesIO
-
-from Utilities import bytes_to_int
-from binascii import hexlify
+from Utilities import bytesToInt, decodeToAscii
 from .ScriptOpCodes import OP_CODES
 
 
@@ -14,7 +12,7 @@ class Script:
     def parse(cls, stream):
         stack = []
         current_position = stream.tell()
-        script_hex = hexlify(stream.read()).decode('ascii')
+        script_hex = decodeToAscii(stream.read())
         stream.seek(current_position)
 
         script_decoded = ''
@@ -28,21 +26,21 @@ class Script:
     def parseScript(stream, stack):
         current_byte = stream.read(1)
         while current_byte != b'':
-            value = bytes_to_int(current_byte)
+            value = bytesToInt(current_byte)
             if value == 0:
                 stack.append('00')
             elif 1 <= value <= 75:
-                data = hexlify(stream.read(value)).decode('ascii')
+                data = decodeToAscii(stream.read(value))
                 if (value == 71 or value == 72) and data.endswith('01'):
                     data = data[:-2] + '[ALL]'
                 stack.append(data)
             elif 76 <= value <= 78:
                 if value == 76:
-                    push_data_size = bytes_to_int(stream.read(1))
+                    push_data_size = bytesToInt(stream.read(1))
                 elif value == 77:
-                    push_data_size = bytes_to_int(stream.read(2))
+                    push_data_size = bytesToInt(stream.read(2))
                 else:
-                    push_data_size = bytes_to_int(stream.read(4))
+                    push_data_size = bytesToInt(stream.read(4))
                 push_data = stream.read(push_data_size)
                 Script.parseScript(BytesIO(push_data), stack)
             elif value == 79:

@@ -1,21 +1,24 @@
 import unittest
 from io import BytesIO
-from binascii import unhexlify, hexlify
+from binascii import unhexlify
 from ComplexEncoder import ComplexEncoder
-from Utilities import bytes_to_int, varInt
+from Utilities import bytesToInt, varInt
 from transaction.TransactionInput import TransactionInput
 from transaction.TransactionOutput import TransactionOutput
+from Utilities import doubleSha256, decodeToAscii
 import json
 
 
 class Transaction:
-    def __init__(self, version, vin, vout):
+    def __init__(self, txhash, version, vin, vout):
+        self.hash = txhash
         self.version = version
         self.vin = vin
         self.vout = vout
 
     def to_dict(self):
         return dict(
+            hash=self.hash,
             version=self.version,
             vin=self.vin,
             vout=self.vout
@@ -23,7 +26,8 @@ class Transaction:
 
     @classmethod
     def parse(cls, stream):
-        version = bytes_to_int(stream.read(4))
+        tx_hash = decodeToAscii(doubleSha256(stream.getvalue())[::-1])
+        version = bytesToInt(stream.read(4))
         is_tx_segwit = cls.isTxSegwit(stream)
         vin = cls.parseTxInputs(stream)
         vout = cls.parseTxOutputs(stream)
@@ -31,16 +35,16 @@ class Transaction:
             for tx_input in vin:
                 txin_witness = cls.parseWitness(stream)
                 tx_input.txinwitness = txin_witness
-        return cls(version, vin, vout)
+        return cls(tx_hash, version, vin, vout)
 
     @staticmethod
     def isTxSegwit(stream):
         reset_stream_pos = stream.tell()
-        marker = bytes_to_int(stream.read(1))
+        marker = bytesToInt(stream.read(1))
         if marker != 0x00:
             stream.seek(reset_stream_pos)
             return False
-        flag = bytes_to_int(stream.read(1))
+        flag = bytesToInt(stream.read(1))
         if flag != 0x01:
             stream.seek(reset_stream_pos)
             return False
@@ -69,8 +73,8 @@ class Transaction:
         witness_stack_size = varInt(stream)
         witness_stack = []
         for index in range(0, witness_stack_size):
-            witness_stack_item_length = varInt(stream)
-            witness = hexlify(stream.read(witness_stack_item_length)).decode('ascii')
+            witness_stack_item_len = varInt(stream)
+            witness = decodeToAscii(stream.read(witness_stack_item_len))
             witness_stack.append(witness)
         return witness_stack
 
@@ -101,6 +105,10 @@ class TestTransaction(unittest.TestCase):
         # assert transaction.txid == '2fa5009216a99a9b4b93574eb274b7f64390dca654e7931506efe6c7ace91cc0'
         #
         raw_transaction = '010000000001016e263fd5f61d5d85f6a220c72bbea6c5f2fd7258ba49e622d97836929313be1d0000000000ffffffff0201c02c3a000000001600147f51134787005f1b667d3eccc187bc723538b096992719000000000017a914f778256e83c7b2e45194d166cf981a27e9553a29870247304402205361dc91b42e19e0082444001c249bfdbd3559a4d13ec04f02b799a816e269a30220366e7b34860705aebf80fdd3b4ccf7a99aad4e0092334d13060bf98b48dac12b012102439161ea5e23585bfbf1d20b6b540388dece80c37ea8a3c13bfb08ac99aeba6400000000'
+        transaction = Transaction.parse(BytesIO(unhexlify(raw_transaction)))
+        print(json.dumps(transaction.to_dict(), cls=ComplexEncoder, indent=2))
+
+        raw_transaction = '01000000000107431ee8ed1d660bd9b5163d6379cd2439aa6d259a14096996ae4bdb6953aea9650100000023220020d2c698bb72ade09ea873fa3c50c28332b42507c76c1f05bc2ede0af53f500010fdffffffb2908958511215a95278339d0d79d2c87d918e9f8b0d932477a03c8023b5ff33010000002322002035fdca1845a4f0b34843576f783e033a9b57732d281d4a8abcbd207d243db9b2fdffffffeb8d921457b6ec70af150f61a101a15be0b36df01a7e910ecf3a885450dbcd7701000000232200202330db9ac709392d73bbe46a005eace68212955dd55ff66b8f8661820399128ffdffffff685fd5a3de0521648968f55cd6bfb3601c0815bfe0431eeb8484fe9d74d7ca260100000023220020ea58c944a84902cdfc9cdaee13c3f1f9fdbb01e7a2c27476bc95c0fbfa27788dfdffffff3d4c0aa4d71cad6aedb9673588a2fb38adb217e02978ce86136c1d6c71a7884a63000000232200202fc0c6354a4d0cd9c3d680448f49ad0ce41bf6e18a1e09c4407145246757b952fdffffffa9a9c537e87716d41c0bfbbe460cc60035d262c01bcfeaa430ab88daec62bae20100000023220020871af08b1bd1cfd8b9986cc1aac7ba6a2f61c72277e26bc66b963fd034536eabfdffffff788ea275c444c7dd41fce3ab581b00496c8bd25b8141ce5c1e083cbcfb0ab3610000000023220020a0032951a458bbfc05e89ed677e1840deaa1af90aff60b4549eaa6f03dc5e9fffdffffff02a40600000000000017a914000abd6df9cce136a3b3535b73357b85772ecbbd8710f102010000000017a914748ac81fc6b858c65a0819ba8d8fb5b18e27ff5b870400483045022100c39d96d9e5b1ac5aa485b3f90c6e46b9b87c8b1b61487bb74c28bd8d61c59681022002a2773bcef20ec7627c65a8ce54f5b5f7563718bcec3e89d30b7a5634d03cb90147304402201848820785f4dda1eaf88e87f389c3f8a78dba7808430f081b1f8c11d667658902207b6a9a5774ada160c8ec26b8541b35b272ada59ebd3f4af17f2d39d418b83bce010102040047304402200f9dbd668672337e1dab24c92a85432e1225b2d3c1b79f8af62cdc3f971fa3e2022058ec4a50b923a3dcf01a0485e63a66e97fcc587de4418271b37a0b60d541f87301483045022100ca88dbe60f9d37346d33e7d789ebb25a202bd28b26006039cc4e667622afc7a1022011e0531a99adf2afca350c9a6735d95805bab3ab55a67d79c0e918d2814c32980101020400483045022100cc1552d76f6fcf4a04a8f65036b1f22925189660e63e524f416a3179313ddb690220097ee71fb584770bf607c80d1506b2e046d3e44636d7dde368d800752f095d8f01473044022059b19abb59f0b03a63352d57897afbc9a880489f2ea0092da293db9920ead1270220199b3b453d0e8b7ef4e3b7e920f478f36d3160a16b3923d2209f9af5b21078c9010102040047304402204851e816425a2a4885308a3cfa43dee3db91aaab1fbe3e7f7fb1d9083c00dcac02200822034f8bf77de00f52af940f3de86912478e30ee0db3d86e82f23b708f5bab014730440220578a25b70115c60247213538670579d11e12be25553fc12833199f520b0698d40220422a23fd557d1199dbe6f6d7cf2bc7f969299042b20ac0ef32a1d985f2819dd80101020400483045022100e7a9b0812a57c5982e7f3db2899ebb7f302bff165da63e87df42d80f6515a88202204f6cacb81aa5c6412c59a259d667e821f8e41829145c5b68953f7b8db6d1ce980147304402203dae20860837947d15bf776ab730b556eb675f09c8f6dafa021f4add1bce4d9302206d43cd3bb1cc112133d1eb00ead2861710f006e7a5e5f49d162259ad01bc828d0101020400483045022100bb9e40777b8fe45994554aa2e0a6bbdccb1b3f0690425b772d43fb4e9b4c54b802207f5bc7c28d34a95c623dae9724f2fac96dd9aab06d34fea45c3fd1977a911cd901473044022040d9c1614b9af2e192b4120b568dbb3a9ae8f953ccc71ccf977462e04f29e72d02201a5d9fc4fe65430d8189cff998670a7659c0420d2213942e7288455977abc8180101020400483045022100f276986b21455692f00226c4cba2f754191906fa931cd665db9b44ff9b19a1170220174e17dc9debbb6ccbf53fdcb94980add092a390422a8e636e5e6c0b7e90aee00147304402203af294578122bc4342e0a790088345f9c0fd5d349f74f12e6b27f4945d914838022064d6bdff11999c8334b02008cec4ea7ae8a80e2fab99655b8a01bc244c942dfd01010200000000'
         transaction = Transaction.parse(BytesIO(unhexlify(raw_transaction)))
         print(json.dumps(transaction.to_dict(), cls=ComplexEncoder, indent=2))
 

@@ -1,6 +1,4 @@
 from unittest import TestCase, main
-
-from core.Address import Address
 from script.Script import Script
 from .ScriptPattern import ScriptPattern
 

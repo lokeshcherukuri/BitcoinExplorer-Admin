@@ -1,7 +1,7 @@
 import base58
 import Globals
 from Utilities import doubleSha256
-from binascii import hexlify, unhexlify
+from binascii import unhexlify
 from unittest import TestCase, main
 
 
@@ -28,7 +28,7 @@ class Address:
         hash160_bytes = prefix + unhexlify(hash160)
         double_sha256 = doubleSha256(hash160_bytes)
         checksum_bytes = double_sha256[:4]
-        return base58.b58encode(hexlify(hash160_bytes + checksum_bytes))
+        return base58.b58encode(hash160_bytes + checksum_bytes)
 
 
 class TestAddress(TestCase):
