@@ -1,5 +1,5 @@
 from io import BytesIO
-from Utilities import bytesToInt, varInt, decodeToAscii
+from Utilities import bytesToInt, varInt, switchEndianAndDecode
 from script.ScriptSig import ScriptSig
 from unittest import TestCase, main
 
@@ -24,7 +24,7 @@ class TransactionInput:
 
     @classmethod
     def parse(cls, stream):
-        txid = decodeToAscii(stream.read(32)[::-1])
+        txid = switchEndianAndDecode(stream.read(32))
         vout = bytesToInt(stream.read(4))
         script_len = varInt(stream)
         script_sig = ScriptSig.parse(BytesIO(stream.read(script_len)))

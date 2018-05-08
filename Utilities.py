@@ -35,6 +35,17 @@ def decodeToAscii(byte_arr):
     return hexlify(byte_arr).decode('ascii')
 
 
+def switchEndianAndDecode(byte_arr):
+    return decodeToAscii(byte_arr[::-1])
+
+
+def readAndResetStream(stream, curr_pos, start_pos, end_pos):
+    stream.seek(start_pos)
+    bytes_arr = stream.read(end_pos-start_pos)
+    stream.seek(curr_pos)
+    return bytes_arr
+
+
 class TestUtilities(TestCase):
     def test_bytes_to_int(self):
         print(bytesToInt(b'01', 'big'))

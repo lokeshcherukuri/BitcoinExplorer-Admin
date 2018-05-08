@@ -2,40 +2,60 @@ import unittest
 from io import BytesIO
 from binascii import unhexlify
 from ComplexEncoder import ComplexEncoder
-from Utilities import bytesToInt, varInt
+from Utilities import bytesToInt, varInt, readAndResetStream
 from transaction.TransactionInput import TransactionInput
 from transaction.TransactionOutput import TransactionOutput
-from Utilities import doubleSha256, decodeToAscii
+from Utilities import doubleSha256, decodeToAscii, switchEndianAndDecode
 import json
 
 
 class Transaction:
-    def __init__(self, txhash, version, vin, vout):
+    def __init__(self, txid, txhash, version, vin, vout, locktime):
+        self.txid = txid
         self.hash = txhash
         self.version = version
         self.vin = vin
         self.vout = vout
+        self.locktime = locktime
 
     def to_dict(self):
         return dict(
+            txid=self.txid,
             hash=self.hash,
             version=self.version,
             vin=self.vin,
-            vout=self.vout
+            vout=self.vout,
+            locktime=self.locktime
         )
 
     @classmethod
     def parse(cls, stream):
-        tx_hash = decodeToAscii(doubleSha256(stream.getvalue())[::-1])
-        version = bytesToInt(stream.read(4))
+        tx_hash = switchEndianAndDecode(doubleSha256(stream.getvalue()))
+
+        version_bytes = stream.read(4);
+        version = bytesToInt(version_bytes)
+        non_witness_bytes = version_bytes
+
         is_tx_segwit = cls.isTxSegwit(stream)
+
+        inputs_start_pos = stream.tell()
         vin = cls.parseTxInputs(stream)
         vout = cls.parseTxOutputs(stream)
+        outputs_end_pos = stream.tell()
+        non_witness_bytes += readAndResetStream(stream, outputs_end_pos, inputs_start_pos, outputs_end_pos)
+
         if is_tx_segwit:
             for tx_input in vin:
                 txin_witness = cls.parseWitness(stream)
                 tx_input.txinwitness = txin_witness
-        return cls(tx_hash, version, vin, vout)
+
+        locktime_bytes = stream.read(4)
+        locktime = bytesToInt(locktime_bytes)
+        non_witness_bytes = non_witness_bytes + locktime_bytes
+
+        tx_id = switchEndianAndDecode(doubleSha256(non_witness_bytes))
+
+        return cls(tx_id, tx_hash, version, vin, vout, locktime)
 
     @staticmethod
     def isTxSegwit(stream):
