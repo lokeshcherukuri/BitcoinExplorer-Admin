@@ -12,6 +12,7 @@ class TransactionOutput:
     def to_dict(self):
         return dict(
             value=self.value,
+            n=self.n,
             scriptPubKey=self.scriptPubKey
         )
 
