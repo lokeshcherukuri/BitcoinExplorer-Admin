@@ -10,6 +10,11 @@ class ScriptSig(Script):
     def __init__(self, script_hex, script_decoded):
         super().__init__(script_hex, script_decoded)
 
+    def __repr__(self):
+        return '{{ \n hex: {}, \n asm: {} \n }}'.format(
+            self.hex, self.asm
+        )
+
     def to_dict(self):
         return dict(
             hex=self.hex,

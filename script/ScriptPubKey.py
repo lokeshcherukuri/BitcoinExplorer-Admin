@@ -9,6 +9,11 @@ class ScriptPubKey(Script):
         self.type = script_type
         self.reqSigs = req_sigs
 
+    def __repr__(self):
+        return '{{ \n hex: {}, \n asm: {}, \n type: {}, \n reqSigs: {} \n }}'.format(
+            self.hex, self.asm, type=self.type, reqSigs=self.reqSigs
+        )
+
     def to_dict(self):
         return dict(
             hex=self.hex,

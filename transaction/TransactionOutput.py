@@ -9,6 +9,11 @@ class TransactionOutput:
         self.value = value
         self.scriptPubKey = script_pubkey
 
+    def __repr__(self):
+        return "{{ \n value: {}\n scriptPubKey: {}\n }}".format(
+            self.value, self.scriptPubKey
+        )
+
     def to_dict(self):
         return dict(
             value=self.value,

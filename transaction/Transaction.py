@@ -1,3 +1,5 @@
+import math
+import json
 import unittest
 from io import BytesIO
 from binascii import unhexlify
@@ -6,8 +8,6 @@ from Utilities import bytesToInt, varInt, readAndResetStream
 from transaction.TransactionInput import TransactionInput
 from transaction.TransactionOutput import TransactionOutput
 from Utilities import doubleSha256, decodeToAscii, switchEndianAndDecode
-import math
-import json
 
 
 class Transaction:
@@ -20,6 +20,19 @@ class Transaction:
         self.vin = vin
         self.vout = vout
         self.locktime = locktime
+
+    def __repr__(self):
+        inputs = ''
+        for tx_input in self.vin:
+            inputs += tx_input.__repr__()
+
+        outputs = ''
+        for tx_output in self.vout:
+            outputs += tx_output.__repr__()
+
+        return '{{ \n txid:{}, \n hash:{}, \n version:{}, \n size:{}, \n vsize:{}, \n vin:[{}], \n vout:[{}], \n locktime:{} \n }}'.format(
+            self.txid, self.hash, self.version, self.size, self.vsize, inputs, outputs, self.locktime
+        )
 
     def to_dict(self):
         return dict(

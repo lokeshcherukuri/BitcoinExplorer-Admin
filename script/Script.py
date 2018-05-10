@@ -8,6 +8,11 @@ class Script:
         self.hex = script_hex
         self.asm = script_decoded
 
+    def __repr__(self):
+        return '{{ \n hex: {}, \n asm: {} \n }}'.format(
+            self.hex, self.asm
+        )
+
     @classmethod
     def parse(cls, stream):
         stack = []

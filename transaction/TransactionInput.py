@@ -1,5 +1,5 @@
-from io import BytesIO
 from Utilities import bytesToInt, varInt, switchEndianAndDecode, decodeToAscii
+from io import BytesIO
 from script.ScriptSig import ScriptSig
 from unittest import TestCase, main
 
@@ -13,6 +13,16 @@ class TransactionInput:
             self.vout = vout
             self.scriptSig = script_sig
         self.sequence = sequence
+
+    def __repr__(self):
+        if hasattr(self, 'coinbase'):
+            return "{{ \n coinbase: {}, \n sequence: {} \n }}".format(
+                self.coinbase, self.sequence
+            )
+        else:
+            return "{{ \n txid: {},\n vout: {}, \n scriptSig: {}, \n sequence: {} \n }}".format(
+                self.txid, self.vout, self.scriptSig, self.sequence
+            )
 
     def to_dict(self):
         if hasattr(self, 'coinbase'):
