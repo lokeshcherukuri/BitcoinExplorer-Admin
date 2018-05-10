@@ -2,7 +2,6 @@ import json
 from binascii import unhexlify
 from io import BytesIO
 from unittest import TestCase, main
-
 from ComplexEncoder import ComplexEncoder
 from script.Script import Script
 
@@ -10,6 +9,11 @@ from script.Script import Script
 class ScriptSig(Script):
     def __init__(self, script_hex, script_decoded):
         super().__init__(script_hex, script_decoded)
+
+    def __repr__(self):
+        return '{{ \n hex: {}, \n asm: {} \n }}'.format(
+            self.hex, self.asm
+        )
 
     def to_dict(self):
         return dict(

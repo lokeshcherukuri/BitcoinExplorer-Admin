@@ -1,6 +1,4 @@
 from unittest import TestCase, main
-
-from core.Address import Address
 from script.Script import Script
 from .ScriptPattern import ScriptPattern
 
@@ -10,6 +8,11 @@ class ScriptPubKey(Script):
         super().__init__(script_hex, script_decoded)
         self.type = script_type
         self.reqSigs = req_sigs
+
+    def __repr__(self):
+        return '{{ \n hex: {}, \n asm: {}, \n type: {}, \n reqSigs: {} \n }}'.format(
+            self.hex, self.asm, type=self.type, reqSigs=self.reqSigs
+        )
 
     def to_dict(self):
         return dict(

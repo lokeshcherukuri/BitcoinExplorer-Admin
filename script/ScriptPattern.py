@@ -73,6 +73,14 @@ class ScriptPattern:
         return True
 
     @staticmethod
+    def isMultiSig(elements):
+        if elements is None or len(elements) == 0:
+            return False
+        if elements[len(elements)-1] != 'OP_CHECKMULTISIG':
+            return False
+        pass
+
+    @staticmethod
     def getDestinationHashes(script, script_type):
         hashes = []
         if script is None:
