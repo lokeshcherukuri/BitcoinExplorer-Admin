@@ -36,7 +36,7 @@ class Script:
                 stack.append('00')
             elif 1 <= value <= 75:
                 data = decodeToAscii(stream.read(value))
-                if (value == 71 or value == 72) and data.endswith('01'):
+                if data.startswith('30') and data.endswith('01'):
                     data = data[:-2] + '[ALL]'
                 stack.append(data)
             elif 76 <= value <= 78:

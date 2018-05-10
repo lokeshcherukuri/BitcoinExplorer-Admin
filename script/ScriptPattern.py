@@ -15,6 +15,8 @@ class ScriptPattern:
             return 'pay-to-witness-pubkey-hash'
         elif ScriptPattern.isPayToWitnessScriptHash(elements):
             return 'pay-to-witness-script-hash'
+        elif ScriptPattern.isMultiSig(elements):
+            return 'multisig'
         else:
             return RuntimeError("Unknown ScriptPubKey Type")
 
@@ -74,11 +76,18 @@ class ScriptPattern:
 
     @staticmethod
     def isMultiSig(elements):
-        if elements is None or len(elements) == 0:
+        if elements is None or len(elements) < 4:
             return False
-        if elements[len(elements)-1] != 'OP_CHECKMULTISIG':
+        last_ele = elements[len(elements)-1]
+        if last_ele != 'OP_CHECKMULTISIG' and last_ele != 'OP_CHECKMULTISIGVERIFY':
             return False
-        pass
+        n = int(elements[0])
+        if n < 1 or n > 16:
+            return False
+        m = int(elements[len(elements)-2])
+        if m < 1 or m > 16:
+            return False
+        return True
 
     @staticmethod
     def getDestinationHashes(script, script_type):
