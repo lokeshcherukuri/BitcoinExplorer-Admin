@@ -22,9 +22,9 @@ class ScriptPattern:
 
     @staticmethod
     def isPayToPubKey(elements):
-        if elements is None or len(elements) != 1:
+        if elements is None or len(elements) != 2:
             return False
-        if elements[0] != 'OP_CHECKSIG':
+        if elements[1] != 'OP_CHECKSIG':
             return False
         return True
 

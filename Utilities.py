@@ -2,6 +2,7 @@ from binascii import unhexlify, hexlify
 from unittest import TestCase, main
 from io import BytesIO
 from hashlib import sha256
+import base58
 
 
 def bytesToInt(byte_arr, byteorder='little'):
@@ -44,6 +45,10 @@ def readAndResetStream(stream, curr_pos, start_pos, end_pos):
     bytes_arr = stream.read(end_pos-start_pos)
     stream.seek(curr_pos)
     return bytes_arr
+
+
+def base58Encode(byte_arr):
+    return base58.b58encode(byte_arr).decode('ascii')
 
 
 class TestUtilities(TestCase):

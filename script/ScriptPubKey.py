@@ -1,4 +1,6 @@
 from unittest import TestCase, main
+
+from core.Address import Address
 from script.Script import Script
 from .ScriptPattern import ScriptPattern
 
@@ -10,8 +12,8 @@ class ScriptPubKey(Script):
         self.reqSigs = req_sigs
 
     def __repr__(self):
-        return '{{ \n hex: {}, \n asm: {}, \n type: {}, \n reqSigs: {} \n }}'.format(
-            self.hex, self.asm, type=self.type, reqSigs=self.reqSigs
+        return '{{ \n hex: {}, \n asm: {}, \n type: {}, \n reqSigs: {} \n addresses: {} \n }}'.format(
+            self.hex, self.asm, self.type, self.reqSigs, self.addresses
         )
 
     def to_dict(self):
@@ -19,7 +21,8 @@ class ScriptPubKey(Script):
             hex=self.hex,
             asm=self.asm,
             type=self.type,
-            reqSigs=self.reqSigs
+            reqSigs=self.reqSigs,
+            addresses=self.addresses
         )
 
     @classmethod
@@ -28,6 +31,7 @@ class ScriptPubKey(Script):
         script_type = ScriptPattern.findScriptType(script.asm)
         script.type = script_type
         script.reqSigs = 1
+        script.addresses = cls.getDestinationAddresses(script.asm, script.type)
         return script
 
     @staticmethod
@@ -41,12 +45,31 @@ class ScriptPubKey(Script):
             RuntimeError("Not implemented")
 
     @staticmethod
-    def getDestinationAddresses(script):
-        # find addresses
-        # hashes = ScriptPattern.getDestinationHashes(script.asm)
-        # for hash in hashes:
-        #     find address
-        pass
+    def getDestinationAddresses(script, script_type):
+        elements = script.split(' ')
+        addresses = []
+        if script_type == 'pay-to-pubkey':
+            address = Address.pubKeyToAddress(elements[0])
+            if address:
+                addresses.append(address)
+        elif script_type == 'pay-to-pubkey-hash':
+            address = Address.hash160ToPubKeyHashAddress(elements[2])
+            if address:
+                addresses.append(address)
+        elif script_type == 'pay-to-script-hash':
+            address = Address.hash160ToScriptHashAddress(elements[1])
+            if address:
+                addresses.append(address)
+        elif script_type == 'multisig':
+            keys = elements[1:len(elements)-2]
+            for key in keys:
+                address = Address.pubKeyToAddress(key)
+                if address:
+                    addresses.append(address)
+        else:
+            pass
+
+        return addresses
 
 
 class TestScriptPubKey(TestCase):

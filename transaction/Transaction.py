@@ -1,13 +1,14 @@
-import math
 import json
+import math
 import unittest
-from io import BytesIO
 from binascii import unhexlify
+from io import BytesIO
+
 from ComplexEncoder import ComplexEncoder
 from Utilities import bytesToInt, varInt, readAndResetStream
+from Utilities import doubleSha256, decodeToAscii, switchEndianAndDecode
 from transaction.TransactionInput import TransactionInput
 from transaction.TransactionOutput import TransactionOutput
-from Utilities import doubleSha256, decodeToAscii, switchEndianAndDecode
 
 
 class Transaction:
@@ -94,7 +95,7 @@ class Transaction:
     def parseTxInputs(stream):
         vin_size = varInt(stream)
         vin = []
-        for index in range(0, vin_size):
+        for index in range(vin_size):
             vin.append(TransactionInput.parse(stream))
         return vin
 
@@ -102,7 +103,7 @@ class Transaction:
     def parseTxOutputs(stream):
         vout_size = varInt(stream)
         vout = []
-        for index in range(0, vout_size):
+        for index in range(vout_size):
             tx_output = TransactionOutput.parse(stream)
             tx_output.n = index
             vout.append(tx_output)
@@ -112,7 +113,7 @@ class Transaction:
     def parseWitness(stream):
         witness_stack_size = varInt(stream)
         witness_stack = []
-        for index in range(0, witness_stack_size):
+        for index in range(witness_stack_size):
             witness_stack_item_len = varInt(stream)
             witness = decodeToAscii(stream.read(witness_stack_item_len))
             witness_stack.append(witness)
@@ -121,13 +122,13 @@ class Transaction:
 
 class TestTransaction(unittest.TestCase):
     def test_parse(self):
-        # coinbase tx
-        raw_transaction = '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff5e03d71b07254d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00ffffffff01faf20b58000000001976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac00000000'
+        # coinbase tx with pay-to-pubkey output
+        raw_transaction = '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff08044c86041b020602ffffffff0100f2052a010000004341041b0e8c2567c12536aa13357b79a073dc4444acb83c4ec7a0e2f99dd7457516c5817242da796924ca4e99947d087fedf9ce467cb9f7c6287078f801df276fdf84ac00000000'
         transaction = Transaction.parse(BytesIO(unhexlify(raw_transaction)))
-        assert transaction.txid == '51bdce0f8a1edd5bc023fd4de42edb63478ca67fc8a37a6e533229c17d794d3f'
+        assert transaction.txid == '8c14f0db3df150123e6f3dbbf30f8b955a8249b62ac1d1ff16284aefa3d06d87'
         print(json.dumps(transaction.to_dict(), cls=ComplexEncoder, indent=2))
 
-        # pubkeyhash and scripthash outputs
+        # pay-to-pubkey-hash and pay-to-script-hash outputs
         raw_transaction = '01000000017cc121bf0baf0a38b36697bb4d6a24edb13efb2ca7de277e8a7f7b015121f75c010000006a473044022071d4bb63c23ebcb70fe38d51731564199541ab3ad74ce2667488a932cb673333022059a235d87caaeb7b5786036a6d6debdcda5b20bb2f96dd7b43f039f2640f3c9401210375522818c3b28945fc4bde4a9429dcd8a4ef01fd7f7c2a1407306abc22e4c5d5feffffff025023bf1f000000001976a914e33a59763b5e008f8e20cb23c765fe7ed000b66188ac924344000000000017a914b549a78d07c2fa029eaa1b2b6effac8064e6a36f872fc80700'
         transaction = Transaction.parse(BytesIO(unhexlify(raw_transaction)))
         assert transaction.txid == '4e66a9188eca7e43c2d169d87f5b2319dc2c19726b8ba0af38adb88492f6a406'
