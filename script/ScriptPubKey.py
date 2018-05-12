@@ -17,29 +17,34 @@ class ScriptPubKey(Script):
         )
 
     def to_dict(self):
-        return dict(
+        dictionary = dict(
             hex=self.hex,
             asm=self.asm,
-            type=self.type,
-            reqSigs=self.reqSigs,
-            addresses=self.addresses
+            type=self.type
         )
+        if hasattr(self, 'addresses'):
+            dictionary['addresses'] = self.addresses
+        if hasattr(self, 'reqSigs'):
+            dictionary['reqSigs'] = self.reqSigs
+        return dictionary
 
     @classmethod
     def parse(cls, stream):
         script = super().parse(stream)
         script_type = ScriptPattern.findScriptType(script.asm)
         script.type = script_type
-        script.reqSigs = 1
-        script.addresses = cls.getDestinationAddresses(script.asm, script.type)
+        addresses = cls.getDestinationAddresses(script.asm, script.type)
+        if addresses is not None and len(addresses) != 0:
+            script.addresses = addresses
+            script.reqSigs = len(addresses)
         return script
 
     @staticmethod
     def numberOfSigsReqToSpend(script, script_type):
-        if script_type == 'pay-to-pubkey-hash':
+        if script_type == 'pubkeyhash':
             script.reqSigs = 1
             pass
-        elif script_type == 'pay-to-script-hash':
+        elif script_type == 'scripthash':
             pass
         else:
             RuntimeError("Not implemented")
@@ -48,15 +53,15 @@ class ScriptPubKey(Script):
     def getDestinationAddresses(script, script_type):
         elements = script.split(' ')
         addresses = []
-        if script_type == 'pay-to-pubkey':
+        if script_type == 'pubkey':
             address = Address.pubKeyToAddress(elements[0])
             if address:
                 addresses.append(address)
-        elif script_type == 'pay-to-pubkey-hash':
+        elif script_type == 'pubkeyhash':
             address = Address.hash160ToPubKeyHashAddress(elements[2])
             if address:
                 addresses.append(address)
-        elif script_type == 'pay-to-script-hash':
+        elif script_type == 'scripthash':
             address = Address.hash160ToScriptHashAddress(elements[1])
             if address:
                 addresses.append(address)
@@ -66,9 +71,6 @@ class ScriptPubKey(Script):
                 address = Address.pubKeyToAddress(key)
                 if address:
                     addresses.append(address)
-        else:
-            pass
-
         return addresses
 
 
