@@ -40,16 +40,6 @@ class ScriptPubKey(Script):
         return script
 
     @staticmethod
-    def numberOfSigsReqToSpend(script, script_type):
-        if script_type == 'pubkeyhash':
-            script.reqSigs = 1
-            pass
-        elif script_type == 'scripthash':
-            pass
-        else:
-            RuntimeError("Not implemented")
-
-    @staticmethod
     def getDestinationAddresses(script, script_type):
         elements = script.split(' ')
         addresses = []

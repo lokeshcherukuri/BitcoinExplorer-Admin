@@ -13,7 +13,7 @@ class Address:
     def isPubKey(key):
         if len(key) != COMPRESSED_PUBKEY_LENGTH*2 and len(key) != UNCOMPRESSED_PUBKEY_LENGTH*2:
             return False
-        if (not key.startswith('02')) and (not key.startswith('03')):
+        if (not key.startswith('02')) and (not key.startswith('03')) and (not key.startswith('04')):
             return False
         return True
 
