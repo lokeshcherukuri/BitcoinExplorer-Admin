@@ -6,13 +6,13 @@ class ScriptPattern:
     def findScriptType(script):
         elements = script.split(' ')
         if ScriptPattern.isPayToPubKey(elements):
-            return 'pay-to-pubkey'
+            return 'pubkey'
         elif ScriptPattern.isPayToPubKeyHash(elements):
-            return 'pay-to-pubkey-hash'
+            return 'pubkeyhash'
         elif ScriptPattern.isPayToScriptHash(elements):
-            return 'pay-to-script-hash'
+            return 'scripthash'
         elif ScriptPattern.isPayToWitnessPubKeyHash(elements):
-            return 'pay-to-witness-pubkey-hash'
+            return 'witness_v0_keyhash'
         elif ScriptPattern.isPayToWitnessScriptHash(elements):
             return 'pay-to-witness-script-hash'
         elif ScriptPattern.isMultiSig(elements):
@@ -22,9 +22,9 @@ class ScriptPattern:
 
     @staticmethod
     def isPayToPubKey(elements):
-        if elements is None or len(elements) != 1:
+        if elements is None or len(elements) != 2:
             return False
-        if elements[0] != 'OP_CHECKSIG':
+        if elements[1] != 'OP_CHECKSIG':
             return False
         return True
 
@@ -95,9 +95,9 @@ class ScriptPattern:
         if script is None:
             return RuntimeError("Script is Empty")
         elements = script.split(' ')
-        if script_type == 'pay-to-pubkey-hash':
+        if script_type == 'pubkeyhash':
             return [elements[2]]
-        elif script_type == 'pay-to-script-hash':
+        elif script_type == 'scripthash':
             return [elements[1]]
         else:
             # TODO implement for othe script types

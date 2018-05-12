@@ -16,16 +16,10 @@ class Script:
     @classmethod
     def parse(cls, stream):
         stack = []
-        current_position = stream.tell()
-        script_hex = decodeToAscii(stream.read())
-        stream.seek(current_position)
-
-        script_decoded = ''
+        script_hex = decodeToAscii(stream.getvalue())
         stack = cls.parseScript(stream, stack)
-        for element in stack:
-            script_decoded += str(element) + ' '
-        script_decoded = script_decoded.strip()
-        return cls(script_hex, script_decoded)
+        script_decoded = ' '.join(str(element) for element in stack)
+        return cls(script_hex, script_decoded.strip())
 
     @staticmethod
     def parseScript(stream, stack):
