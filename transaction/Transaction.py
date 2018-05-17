@@ -6,9 +6,10 @@ from io import BytesIO
 
 from ComplexEncoder import ComplexEncoder
 from Utilities import bytesToInt, varInt, readAndResetStream
-from Utilities import doubleSha256, decodeToAscii, switchEndianAndDecode
 from transaction.TransactionInput import TransactionInput
 from transaction.TransactionOutput import TransactionOutput
+from utils.Sha256Hash import doubleSha256
+from utils.EncoderDecoder import decodeToAscii, switchEndianAndDecode
 
 
 class Transaction:

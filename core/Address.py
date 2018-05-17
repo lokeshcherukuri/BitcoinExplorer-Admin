@@ -5,7 +5,8 @@ from unittest import TestCase, main
 
 from Globals import COMPRESSED_PUBKEY_LENGTH, UNCOMPRESSED_PUBKEY_LENGTH
 from Globals import NETWORK
-from Utilities import doubleSha256, base58Encode, decodeToAscii
+from utils.EncoderDecoder import decodeToAscii, base58Encode
+from utils.Sha256Hash import doubleSha256
 
 
 class Address:

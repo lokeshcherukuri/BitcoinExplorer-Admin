@@ -4,9 +4,11 @@ from io import BytesIO
 from unittest import TestCase, main
 
 from ComplexEncoder import ComplexEncoder
-from Utilities import bytesToInt, varInt, switchEndianAndDecode
-from Utilities import doubleSha256, readAndResetStream
+from Utilities import bytesToInt, varInt
+from Utilities import readAndResetStream
 from transaction.Transaction import Transaction
+from utils.EncoderDecoder import switchEndianAndDecode
+from utils.Sha256Hash import doubleSha256
 
 
 class Block:
@@ -82,7 +84,7 @@ class TestBlock(TestCase):
     def test_findDifficulty(self):
         bits = 'e93c0118'
         difficulty = Block.findDifficulty(unhexlify(bits)[::-1])
-        print(difficulty)
+        assert difficulty == 888171856257.3206
 
 
 if __name__ == '__main__':

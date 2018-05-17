@@ -1,4 +1,5 @@
-from Utilities import bytesToInt, varInt, switchEndianAndDecode, decodeToAscii
+from Utilities import bytesToInt, varInt
+from utils.EncoderDecoder import decodeToAscii, switchEndianAndDecode
 from io import BytesIO
 from script.ScriptSig import ScriptSig
 from unittest import TestCase, main

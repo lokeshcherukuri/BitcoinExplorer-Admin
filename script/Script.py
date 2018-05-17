@@ -1,5 +1,6 @@
 from io import BytesIO
-from Utilities import bytesToInt, decodeToAscii
+from Utilities import bytesToInt
+from utils.EncoderDecoder import decodeToAscii
 from .ScriptOpCodes import OP_CODES
 
 
