@@ -6,10 +6,8 @@ from .ScriptPattern import ScriptPattern
 
 
 class ScriptPubKey(Script):
-    def __init__(self, script_hex, script_decoded, script_type=None, req_sigs=None):
+    def __init__(self, script_hex, script_decoded):
         super().__init__(script_hex, script_decoded)
-        self.type = script_type
-        self.reqSigs = req_sigs
 
     def __repr__(self):
         return '{{ \n hex: {}, \n asm: {}, \n type: {}, \n reqSigs: {} \n addresses: {} \n }}'.format(
@@ -31,16 +29,14 @@ class ScriptPubKey(Script):
     @classmethod
     def parse(cls, stream):
         script = super().parse(stream)
-        script_type = ScriptPattern.findScriptType(script.asm)
-        script.type = script_type
-        addresses = cls.getDestinationAddresses(script.asm, script.type)
-        if addresses is not None and len(addresses) != 0:
-            script.addresses = addresses
-            script.reqSigs = len(addresses)
+        script.type = ScriptPattern.findScriptType(script.asm)
+        script.addresses = cls.getReceiverAddresses(script.asm, script.type)
+        if script.addresses is not None and len(script.addresses) != 0:
+            script.reqSigs = len(script.addresses)
         return script
 
     @staticmethod
-    def getDestinationAddresses(script, script_type):
+    def getReceiverAddresses(script, script_type):
         elements = script.split(' ')
         addresses = []
         if script_type == 'pubkey':

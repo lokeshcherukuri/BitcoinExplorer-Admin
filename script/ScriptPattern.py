@@ -18,7 +18,7 @@ class ScriptPattern:
         elif ScriptPattern.isMultiSig(elements):
             return 'multisig'
         else:
-            return RuntimeError("Unknown ScriptPubKey Type")
+            return 'Unknown Script Type'
 
     @staticmethod
     def isPayToPubKey(elements):

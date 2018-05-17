@@ -52,11 +52,17 @@ def base58Encode(byte_arr):
 
 
 class TestUtilities(TestCase):
-    def test_bytes_to_int(self):
+    def test_bytesToInt(self):
         print(bytesToInt(b'01', 'big'))
 
     def test_var_int(self):
-        print(varInt(BytesIO(unhexlify('fd0302'))))
+        num = varInt(BytesIO(unhexlify('fd5d01')))
+        assert num == 349
+
+    def test_switchEndianAndDecode(self):
+        little_endian = 'e93c0118'
+        big_endian = switchEndianAndDecode(unhexlify(little_endian))
+        assert big_endian == '18013ce9'
 
 
 if __name__ == '__main__':

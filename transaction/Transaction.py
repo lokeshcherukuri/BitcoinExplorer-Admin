@@ -12,12 +12,13 @@ from transaction.TransactionOutput import TransactionOutput
 
 
 class Transaction:
-    def __init__(self, txid, txhash, version, size, vsize, vin, vout, locktime):
+    def __init__(self, txid, txhash, version, size, vsize, witnesslength, vin, vout, locktime):
         self.txid = txid
         self.hash = txhash
         self.version = version
         self.size = size
         self.vsize = vsize
+        self.witnesslength = witnesslength
         self.vin = vin
         self.vout = vout
         self.locktime = locktime
@@ -49,13 +50,13 @@ class Transaction:
 
     @classmethod
     def parse(cls, stream):
+        tx_start_position = stream.tell()
         tx_hash = switchEndianAndDecode(doubleSha256(stream.getvalue()))
 
         version_bytes = stream.read(4)
         version = bytesToInt(version_bytes)
         non_witness_bytes = version_bytes
 
-        size = len(stream.getvalue())
         is_tx_segwit = cls.isTxSegwit(stream)
 
         inputs_start_pos = stream.tell()
@@ -72,11 +73,14 @@ class Transaction:
         locktime_bytes = stream.read(4)
         locktime = bytesToInt(locktime_bytes)
         non_witness_bytes = non_witness_bytes + locktime_bytes
+        tx_end_position = stream.tell()
 
         tx_id = switchEndianAndDecode(doubleSha256(non_witness_bytes))
+        size = tx_end_position - tx_start_position
         vsize = math.ceil((len(non_witness_bytes)*3 + size)/4)
+        witnesslength = size - len(non_witness_bytes)
 
-        return cls(tx_id, tx_hash, version, size, vsize, vin, vout, locktime)
+        return cls(tx_id, tx_hash, version, size, vsize, witnesslength, vin, vout, locktime)
 
     @staticmethod
     def isTxSegwit(stream):
@@ -94,9 +98,7 @@ class Transaction:
     @staticmethod
     def parseTxInputs(stream):
         vin_size = varInt(stream)
-        vin = []
-        for index in range(vin_size):
-            vin.append(TransactionInput.parse(stream))
+        vin = [TransactionInput.parse(stream) for _ in range(vin_size)]
         return vin
 
     @staticmethod
@@ -113,7 +115,7 @@ class Transaction:
     def parseWitness(stream):
         witness_stack_size = varInt(stream)
         witness_stack = []
-        for index in range(witness_stack_size):
+        for _ in range(witness_stack_size):
             witness_stack_item_len = varInt(stream)
             witness = decodeToAscii(stream.read(witness_stack_item_len))
             witness_stack.append(witness)

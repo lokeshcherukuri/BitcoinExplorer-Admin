@@ -26,7 +26,6 @@ class TransactionOutput:
         value = bytesToInt(stream.read(8))
         script_pubkey_len = varInt(stream)
         script_pubkey = ScriptPubKey.parse(BytesIO(stream.read(script_pubkey_len)))
-
         return cls(value, script_pubkey)
 
 
