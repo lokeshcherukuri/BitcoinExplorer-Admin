@@ -1,6 +1,8 @@
 from unittest import TestCase, main
 
 from core.Address import Address
+from core.LegacyAddress import LegacyAddress
+from core.SegwitAddress import SegwitAddress
 from script.Script import Script
 from .ScriptPattern import ScriptPattern
 
@@ -14,7 +16,7 @@ class ScriptPubKey(Script):
             self.hex, self.asm, self.type, self.reqSigs, self.addresses
         )
 
-    def to_dict(self):
+    def toString(self):
         dictionary = dict(
             hex=self.hex,
             asm=self.asm,
@@ -38,26 +40,30 @@ class ScriptPubKey(Script):
     @staticmethod
     def getReceiverAddresses(script, script_type):
         elements = script.split(' ')
-        addresses = []
-        if script_type == 'pubkey':
-            address = Address.pubKeyToAddress(elements[0])
-            if address:
-                addresses.append(address)
-        elif script_type == 'pubkeyhash':
-            address = Address.hash160ToPubKeyHashAddress(elements[2])
-            if address:
-                addresses.append(address)
-        elif script_type == 'scripthash':
-            address = Address.hash160ToScriptHashAddress(elements[1])
-            if address:
-                addresses.append(address)
+        if ScriptPattern.isPayToPubKey(elements):
+            pubkey = ScriptPattern.extractKeyFromPayToPubKey(elements)
+            address = LegacyAddress.fromPubKey(pubkey)
+            return [address] if address is not None else []
+        elif ScriptPattern.isPayToPubKeyHash(elements):
+            pubkeyhash = ScriptPattern.extractHashFromPayToPubKeyHash(elements)
+            address = LegacyAddress.fromPubKeyHash(pubkeyhash)
+            return [address] if address is not None else []
+        elif ScriptPattern.isPayToScriptHash(elements):
+            scripthash = ScriptPattern.extractHashFromPayToScriptHash(elements)
+            address = LegacyAddress.fromScriptHash(scripthash)
+            return [address] if address is not None else []
+        elif ScriptPattern.isPayToWitnessHash(elements):
+            witnesshash = ScriptPattern.extractHashFromPayToWitnessHash(elements)
+            address = SegwitAddress.fromWitnessHash(witnesshash)
+            return [address] if address is not None else []
         elif script_type == 'multisig':
+            addresses = []
             keys = elements[1:len(elements)-2]
             for key in keys:
-                address = Address.pubKeyToAddress(key)
+                address = LegacyAddress.fromPubKey(key)
                 if address:
                     addresses.append(address)
-        return addresses
+            return addresses
 
 
 class TestScriptPubKey(TestCase):

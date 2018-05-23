@@ -25,7 +25,7 @@ class TransactionInput:
                 self.txid, self.vout, self.scriptSig, self.sequence
             )
 
-    def to_dict(self):
+    def toString(self):
         if hasattr(self, 'coinbase'):
             return dict(
                 coinbase=self.coinbase,

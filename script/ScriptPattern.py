@@ -11,10 +11,10 @@ class ScriptPattern:
             return 'pubkeyhash'
         elif ScriptPattern.isPayToScriptHash(elements):
             return 'scripthash'
-        elif ScriptPattern.isPayToWitnessPubKeyHash(elements):
+        elif ScriptPattern.isPayToWitnessHash(elements):
             return 'witness_v0_keyhash'
         elif ScriptPattern.isPayToWitnessScriptHash(elements):
-            return 'pay-to-witness-script-hash'
+            return 'witness_v0_scripthash'
         elif ScriptPattern.isMultiSig(elements):
             return 'multisig'
         else:
@@ -27,6 +27,10 @@ class ScriptPattern:
         if elements[1] != 'OP_CHECKSIG':
             return False
         return True
+
+    @staticmethod
+    def extractKeyFromPayToPubKey(elements):
+        return elements[0]
 
     @staticmethod
     def isPayToPubKeyHash(elements):
@@ -43,6 +47,10 @@ class ScriptPattern:
         return True
 
     @staticmethod
+    def extractHashFromPayToPubKeyHash(elements):
+        return elements[2]
+
+    @staticmethod
     def isPayToScriptHash(elements):
         if elements is None or len(elements) != 3:
             return False
@@ -53,6 +61,25 @@ class ScriptPattern:
         if elements[2] != 'OP_EQUAL':
             return False
         return True
+
+    @staticmethod
+    def extractHashFromPayToScriptHash(elements):
+        return elements[1]
+
+    @staticmethod
+    def isPayToWitnessHash(elements):
+        if elements is None or len(elements) != 2:
+            return False
+        if elements[0] != '00':
+            return False
+        if elements[1] is None or \
+                (len(elements[1]) != 2 * PKH_WITNESS_LENGTH and len(elements[1]) != 2 * SH_WITNESS_LENGTH):
+            return False
+        return True
+
+    @staticmethod
+    def extractHashFromPayToWitnessHash(elements):
+        return elements[1]
 
     @staticmethod
     def isPayToWitnessPubKeyHash(elements):
