@@ -12,33 +12,47 @@ from utils.Sha256Hash import doubleSha256
 
 
 class Block:
-    def __init__(self, block_hash, size, strippedsize, version, previousblockhash, merkleroot, timestamp,
-                 bits, nonce, txs, difficulty):
-        self.hash = block_hash
+    def __init__(self, blockhash, size, strippedsize, weight, version, previousblockhash,
+                 merkleroot, time, bits, nonce, txcount, txs, difficulty):
+        self.blockhash = blockhash
         self.size = size
         self.strippedsize = strippedsize
+        self.weight = weight
+        self.height = 0
         self.version = version
         self.previousblockhash = previousblockhash
+        self.nextblockhash = ''
         self.merkleroot = merkleroot
-        self.timestamp = timestamp
+        self.time = time
         self.bits = bits
         self.nonce = nonce
+        self.txcount = txcount
         self.txs = txs
         self.difficulty = difficulty
+        self.fees = 0
+        self.chainwork = ''
+        self.confirmations = 0
 
     def toString(self):
         return dict(
-            hash=self.hash,
+            blockhash=self.blockhash,
             size=self.size,
             strippedsize=self.strippedsize,
+            weight=self.weight,
+            height=self.height,
             version=self.version,
             merkleroot=self.merkleroot,
+            txcount=self.txcount,
             txs=self.txs,
             nonce=self.nonce,
-            timestamp=self.timestamp,
+            time=self.time,
             bits=self.bits,
             difficulty=self.difficulty,
-            previousblockhash=self.previousblockhash
+            previousblockhash=self.previousblockhash,
+            nextblockhash=self.nextblockhash,
+            chainwork=self.chainwork,
+            fees=self.fees,
+            confirmations=self.confirmations
         )
 
     @classmethod
@@ -46,7 +60,7 @@ class Block:
         version = bytesToInt(stream.read(4))
         previousblockhash = switchEndianAndDecode(stream.read(32))
         merkleroot = switchEndianAndDecode(stream.read(32))
-        timestamp = bytesToInt(stream.read(4))
+        time = bytesToInt(stream.read(4))
 
         bits_bytes = stream.read(4)
         bits = hexlify(bits_bytes[::-1]).decode('ascii')
@@ -57,14 +71,15 @@ class Block:
         hash_bytes = readAndResetStream(stream, stream.tell(), 0, stream.tell())
         block_hash = switchEndianAndDecode(doubleSha256(hash_bytes))
 
-        tx_count = varInt(stream)
-        txs = [Transaction.parse(stream) for _ in range(tx_count)]
+        txcount = varInt(stream)
+        txs = [Transaction.parse(stream) for _ in range(txcount)]
         txs_witness_length = sum(tx.witnesslength for tx in txs)
 
         size = len(stream.getvalue())
         strippedsize = size - txs_witness_length
-        return cls(block_hash, size, strippedsize, version, previousblockhash, merkleroot, timestamp,
-                   bits, nonce, txs, difficulty)
+        wieght = (strippedsize * 3) + size
+        return cls(block_hash, size, strippedsize, wieght, version, previousblockhash, merkleroot, time,
+                   bits, nonce, txcount, txs, difficulty)
 
     @staticmethod
     def findDifficulty(bits_bytes):
