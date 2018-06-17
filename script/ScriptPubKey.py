@@ -1,13 +1,13 @@
 from unittest import TestCase, main
 
-from core.Address import Address
-from core.LegacyAddress import LegacyAddress
-from core.SegwitAddress import SegwitAddress
+from address.LegacyAddress import LegacyAddress
+from address.SegwitAddress import SegwitAddress
 from script.Script import Script
 from .ScriptPattern import ScriptPattern
 
 
 class ScriptPubKey(Script):
+
     def __init__(self, script_hex, script_decoded):
         super().__init__(script_hex, script_decoded)
 

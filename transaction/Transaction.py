@@ -108,7 +108,7 @@ class Transaction:
         vout = []
         for index in range(vout_size):
             tx_output = TransactionOutput.parse(stream)
-            tx_output.n = index
+            tx_output.output_index = index
             vout.append(tx_output)
         return vout
 

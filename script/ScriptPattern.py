@@ -2,6 +2,7 @@ from Globals import LEGACY_ADDRESS_SIZE, PKH_WITNESS_LENGTH, SH_WITNESS_LENGTH
 
 
 class ScriptPattern:
+
     @staticmethod
     def findScriptType(script):
         elements = script.split(' ')
