@@ -1,7 +1,7 @@
 from Utilities import bytesToInt, varInt
 from utils.EncoderDecoder import decodeToAscii, switchEndianAndDecode
 from io import BytesIO
-from script.ScriptSig import ScriptSig
+from core.script.ScriptSig import ScriptSig
 from unittest import TestCase, main
 
 

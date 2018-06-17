@@ -1,7 +1,7 @@
 from io import BytesIO
 from unittest import TestCase, main
 from Utilities import bytesToInt, varInt
-from script.ScriptPubKey import ScriptPubKey
+from core.script.ScriptPubKey import ScriptPubKey
 
 
 class TransactionOutput:

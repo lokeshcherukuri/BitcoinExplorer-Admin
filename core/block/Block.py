@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from ComplexEncoder import ComplexEncoder
 from Utilities import bytesToInt, varInt
 from Utilities import readAndResetStream
-from transaction.Transaction import Transaction
+from core.transaction.Transaction import Transaction
 from utils.EncoderDecoder import switchEndianAndDecode
 from utils.Sha256Hash import doubleSha256
 
