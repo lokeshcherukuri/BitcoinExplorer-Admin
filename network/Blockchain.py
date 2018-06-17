@@ -1,4 +1,5 @@
 import json
+
 import requests
 from unittest import TestCase, main
 
@@ -46,4 +47,3 @@ class BlockchainTest(TestCase):
 
 if __name__ == "__main__":
     main()
-

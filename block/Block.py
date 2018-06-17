@@ -12,6 +12,7 @@ from utils.Sha256Hash import doubleSha256
 
 
 class Block:
+
     def __init__(self, blockhash, size, strippedsize, weight, version, previousblockhash,
                  merkleroot, time, bits, nonce, txcount, txs, difficulty):
         self.blockhash = blockhash
