@@ -5,6 +5,7 @@ from .ScriptOpCodes import OP_CODES
 
 
 class Script:
+
     def __init__(self, script_hex, script_decoded):
         self.hex = script_hex
         self.asm = script_decoded

@@ -7,6 +7,7 @@ from script.Script import Script
 
 
 class ScriptSig(Script):
+
     def __init__(self, script_hex, script_decoded):
         super().__init__(script_hex, script_decoded)
 
