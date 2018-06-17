@@ -1,8 +1,8 @@
 from unittest import TestCase, main
 
-from address.LegacyAddress import LegacyAddress
-from address.SegwitAddress import SegwitAddress
-from script.Script import Script
+from core.address.LegacyAddress import LegacyAddress
+from core.address.SegwitAddress import SegwitAddress
+from core.script.Script import Script
 from .ScriptPattern import ScriptPattern
 
 

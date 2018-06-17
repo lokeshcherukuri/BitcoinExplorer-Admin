@@ -3,7 +3,7 @@ from binascii import unhexlify
 from io import BytesIO
 from unittest import TestCase, main
 from ComplexEncoder import ComplexEncoder
-from script.Script import Script
+from core.script.Script import Script
 
 
 class ScriptSig(Script):
